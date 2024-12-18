@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <title>ITC-studnet</title>
+    <link rel="icon" href="icon/favicon.ico" type="image/x-icon">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            direction: rtl;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 5px;
+        }
+        .statistics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-box {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .stat-box:hover {
+            background-color: #f0f0f0;
+        }
+        .stat-box h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .stat-box .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .input-section, .search-section {
+            display: flex;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        input, button {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .clear-btn {
+            background-color: #f44336;     /* #f44336*/
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .clear-btn:hover {
+            background-color: #45a049;      /* #d32f2f*/
+        }
+        .list-section {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 361px;
+            overflow-y: auto;
+        }
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .action-btn {
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 5px;
+        }
+        .close {
+            color: #aaa;
+            float: left;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .badge {
+            background-color: #4CAF50;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-right: 10px;
+            unicode-bidi: isolate;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="statistics-grid">
+            <div class="stat-box" onclick="toggleSection('totalStudents')">
+                <h3>إجمالي الطلاب</h3>
+                <div id="totalStudentsCount" class="stat-value">0</div>
+            </div>
+            <div class="stat-box" onclick="toggleSection('topStudents')">
+                <h3>أفضل الطلاب</h3>
+                <div id="topStudentsRanking" class="stat-value">0</div>
+            </div>
+            <div class="stat-box" onclick="toggleSection('mostAttendance')">
+                <h3>الأكثر حضورًا</h3>
+                <div id="mostAttendanceRanking" class="stat-value">0</div>
+            </div>
+        </div>
+
+        <div class="search-section">
+            <input type="text" id="searchInput" placeholder="البحث عن طالب" oninput="studentManager.searchStudents()">
+        </div>
+
+        <div class="input-section">
+            <input type="text" id="studentName" placeholder="اسم الطالب" maxlength="50" onkeypress="handleEnterKeyAddStudent(event)">
+            <button onclick="studentManager.addStudent()">إضافة طالب</button>
+            <button onclick="studentManager.clearAllStudents()" class="clear-btn">مسح جميع الطلاب</button>
+        </div>
+
+        <div id="totalStudentsList" class="list-section"></div>
+        <div id="topStudentsFullList" class="list-section" style="display:none;"></div>
+        <div id="mostAttendanceFullList" class="list-section" style="display:none;"></div>
+        <div id="searchResultsList" class="list-section" style="display:none;"></div>
+    </div>
+
+    <div id="studentDetailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('studentDetailsModal')">&times;</span>
+            <h2 id="modalStudentName">تفاصيل الطالب</h2>
+            <div id="studentDetailsContent"></div>
+            <div>
+                <h3>إضافة حضور</h3>
+                <div class="input-group">
+                    <label>التاريخ</label>
+                    <input type="date" id="attendanceDate">
+                </div>
+                <button onclick="studentManager.addAttendance()">إضافة حضور</button>
+            </div>
+            <div>
+                <h3>إضافة مشروع</h3>
+                <div class="input-group">
+                    <label>عنوان المشروع</label>
+                    <input type="text" id="projectTitle" placeholder="عنوان المشروع">
+                </div>
+                <div class="input-group">
+                    <label>تاريخ المشروع</label>
+                    <input type="date" id="projectDate">
+                </div>
+                <button onclick="studentManager.addProject()">إضافة مشروع</button>
+            </div>
+        </div>
+    </div>
+    <script src="me.js"></script>
+</body>
+</html>
