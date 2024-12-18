@@ -26,5 +26,4 @@
    git clone https://github.com/Lorouss/student-itc.git
 
 2. أو أدخل الى الرابط التالي وسترى الموقع 
-  ```bash
-  https://student-itc.vercel.app/
+  [itc-student.com](https://student-itc.vercel.app/)
