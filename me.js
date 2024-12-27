@@ -1,4 +1,3 @@
-// Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyAE1DljqYJ8PvG1TPhHmdpfbt5R_9g2UhY",
   authDomain: "itc-me.firebaseapp.com",
@@ -10,7 +9,6 @@ const firebaseConfig = {
   measurementId: "G-TL87WZ6XEK"
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
@@ -38,7 +36,6 @@ class StudentManager {
 
     async saveStudents() {
         try {
-            // Update all students in Firebase
             const batch = db.batch();
             this.students.forEach(student => {
                 const studentRef = db.collection('students').doc(student.id);
@@ -55,6 +52,33 @@ class StudentManager {
         } catch (error) {
             console.error("Error saving students: ", error);
             alert('حدث خطأ في حفظ بيانات الطلاب');
+        }
+    }
+    async resetAllPoints() {
+        if (!confirm('هل أنت متأكد من تصفير جميع البيانات؟')) return;
+    
+        try {
+            const batch = db.batch();
+            this.students.forEach(student => {
+                student.totalPoints = 0;
+                student.attendances = [];
+                student.projects = [];
+                const studentRef = db.collection('students').doc(student.id);
+                batch.update(studentRef, { 
+                    totalPoints: 0,
+                    attendances: [],
+                    projects: []
+                });
+            });
+            await batch.commit();
+            
+            this.updateAllStatistics();
+            if (this.currentStudentId) {
+                this.showStudentDetails(this.currentStudentId);
+            }
+        } catch (error) {
+            console.error("Error resetting data: ", error);
+            alert('حدث خطأ في تصفير البيانات');
         }
     }
 
@@ -96,17 +120,16 @@ class StudentManager {
         const mostAttendanceElement = document.getElementById('mostAttendanceRanking');
         const mostAttendanceFullList = document.getElementById('mostAttendanceFullList');
         
-        const mostAttendanceStudents = [...this.students]
-            .sort((a, b) => b.attendances.length - a.attendances.length)
+        const mostAttendanceStudents = [...this.students]         // here the change
+            .sort((a, b) => a.totalPoints - b.totalPoints)
             .slice(0, 5);
-
         mostAttendanceElement.textContent = mostAttendanceStudents.length;
 
         mostAttendanceFullList.innerHTML = this.students
-            .sort((a, b) => b.attendances.length - a.attendances.length)
+            .sort((a, b) => a.totalPoints - b.totalPoints)
             .map((student, index) => `
             <div class="list-item">
-                <span>${index + 1}. ${student.name} <span class="badge">${student.attendances.length} يوم حضور</span></span>
+                <span>${index + 1}. ${student.name} <span class="badge">${student.attendances.length} مشاركة </span></span>
                 <div>
                     <span class="action-btn" onclick="studentManager.showStudentDetails('${student.id}')">🔍</span>
                     <span class="action-btn" onclick="studentManager.deleteStudent('${student.id}')">❌</span>
@@ -186,10 +209,8 @@ class StudentManager {
         if (!confirm('هل أنت متأكد من حذف هذا الطالب؟')) return;
 
         try {
-            // Delete from Firestore
             await db.collection('students').doc(studentId).delete();
             
-            // Remove from local array
             this.students = this.students.filter(s => s.id !== studentId);
             
             this.showAllStudents();
@@ -204,7 +225,6 @@ class StudentManager {
         if (!confirm('هل أنت متأكد من مسح جميع الطلاب؟')) return;
 
         try {
-            // Delete all students from Firestore
             const batch = db.batch();
             this.students.forEach(student => {
                 const studentRef = db.collection('students').doc(student.id);
@@ -212,7 +232,6 @@ class StudentManager {
             });
             await batch.commit();
 
-            // Clear local array
             this.students = [];
             this.showAllStudents();
             this.updateAllStatistics();
@@ -250,11 +269,15 @@ class StudentManager {
                 `).join('') || 'لا يوجد مشاريع'}
             </ul>
 
-            <p>إجمالي النقاط: ${student.totalPoints} نقطة</p>
+            <p class="point-font">
+              إجمالي النقاط : 
+              <span class="highlight">${student.totalPoints} نقطة</span>
+            </p>
+
         `;
 
         const modalStudentName = document.getElementById('modalStudentName');
-        modalStudentName.textContent = `تفاصيل الطالب: ${student.name}`;
+        modalStudentName.innerHTML = `ㅤ<span class="student">${student.name} </span>ㅤ`;
 
         const modal = document.getElementById('studentDetailsModal');
         modal.style.display = 'block';
@@ -270,7 +293,6 @@ class StudentManager {
         const student = this.students.find(s => s.id === this.currentStudentId);
         if (!student) return;
 
-        // تجنب إضافة تاريخ مكرر
         if (student.attendances.includes(attendanceDate)) {
             alert('تم إضافة هذا التاريخ من قبل');
             return;
@@ -280,7 +302,6 @@ class StudentManager {
             student.attendances.push(attendanceDate);
             student.totalPoints += 1;
             
-            // Update student in Firestore
             await db.collection('students').doc(student.id).update({
                 attendances: student.attendances,
                 totalPoints: student.totalPoints
@@ -303,7 +324,6 @@ class StudentManager {
             student.attendances.splice(index, 1);
             student.totalPoints = Math.max(0, student.totalPoints - 1);
 
-            // Update student in Firestore
             await db.collection('students').doc(student.id).update({
                 attendances: student.attendances,
                 totalPoints: student.totalPoints
@@ -336,9 +356,8 @@ class StudentManager {
 
         try {
             student.projects.push(newProject);
-            student.totalPoints += 2; // منح نقطتين للمشروع
+            student.totalPoints += 2; // نقطتان للمشروع
 
-            // Update student in Firestore
             await db.collection('students').doc(student.id).update({
                 projects: student.projects,
                 totalPoints: student.totalPoints
@@ -347,7 +366,6 @@ class StudentManager {
             this.updateAllStatistics();
             this.showStudentDetails(this.currentStudentId);
 
-            // مسح الحقول بعد الإضافة
             document.getElementById('projectTitle').value = '';
             document.getElementById('projectDate').value = '';
         } catch (error) {
@@ -364,7 +382,6 @@ class StudentManager {
             student.projects.splice(index, 1);
             student.totalPoints = Math.max(0, student.totalPoints - 2);
 
-            // Update student in Firestore
             await db.collection('students').doc(student.id).update({
                 projects: student.projects,
                 totalPoints: student.totalPoints
@@ -382,7 +399,6 @@ class StudentManager {
         const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
         const searchResultsList = document.getElementById('searchResultsList');
 
-        // إخفاء القوائم الأخرى
         this.hideAllListSections();
 
         if (!searchTerm) {
@@ -409,28 +425,22 @@ class StudentManager {
         searchResultsList.style.display = 'block';
     }
 }
-
-// إنشاء مثيل لإدارة الطلاب
 const studentManager = new StudentManager();
 
-// دالة إغلاق النافذة المنبثقة
     function closeModal(modalId) {
         const modal = document.getElementById(modalId);
         modal.style.display = 'none';
     }
 
-    // دالة تبديل عرض الأقسام
     function toggleSection(sectionType) {
         const totalStudentsList = document.getElementById('totalStudentsList');
         const topStudentsFullList = document.getElementById('topStudentsFullList');
         const mostAttendanceFullList = document.getElementById('mostAttendanceFullList');
 
-        // إخفاء جميع القوائم أولاً
         totalStudentsList.style.display = 'none';
         topStudentsFullList.style.display = 'none';
         mostAttendanceFullList.style.display = 'none';
 
-        // عرض القائمة المطلوبة
         switch(sectionType) {
             case 'totalStudents':
                 totalStudentsList.style.display = 'block';
@@ -444,7 +454,6 @@ const studentManager = new StudentManager();
         }
     }
     function handleEnterKeyAddStudent(event) {
-    // التحقق مما إذا كان المفتاح المضغوط هو Enter (كود المفتاح 13)
     if (event.keyCode === 13 || event.which === 13) {
         studentManager.addStudent();
     }
