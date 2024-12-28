@@ -154,17 +154,20 @@ class StudentManager {
     showAllStudents() {
         this.hideAllListSections();
         const totalStudentsList = document.getElementById('totalStudentsList');
-        totalStudentsList.innerHTML = this.students.length > 0 
-            ? this.students.map(student => `
-                <div class="list-item">
-                    <span>${student.name}</span>
-                    <div>
-                        <span class="action-btn" onclick="studentManager.showStudentDetails('${student.id}')">🔍</span>
-                        <span class="action-btn" onclick="studentManager.deleteStudent('${student.id}')">❌</span>
-                    </div>
+
+        const sortedStudents = [...this.students].sort((a, b) => a.name.localeCompare(b.name));
+
+        totalStudentsList.innerHTML = sortedStudents.length > 0 
+        ? sortedStudents.map(student => `
+            <div class="list-item">
+                <span>${student.name}</span>
+                <div>
+                    <span class="action-btn" onclick="studentManager.showStudentDetails('${student.id}')">🔍</span>
+                    <span class="action-btn" onclick="studentManager.deleteStudent('${student.id}')">❌</span>
                 </div>
-            `).join('') 
-            : '<p>لا يوجد طلاب</p>';
+            </div>
+        `).join('') 
+        : '<p>لا يوجد طلاب</p>';
         
         totalStudentsList.style.display = 'block';
     }
