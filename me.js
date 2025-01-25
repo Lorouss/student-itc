@@ -1,12 +1,12 @@
 const firebaseConfig = {
     apiKey: "AIzaSyAE1DljqYJ8PvG1TPhHmdpfbt5R_9g2UhY",
-  authDomain: "itc-me.firebaseapp.com",
-  databaseURL: "https://itc-me-default-rtdb.firebaseio.com",
-  projectId: "itc-me",
-  storageBucket: "itc-me.firebasestorage.app",
-  messagingSenderId: "886913167195",
-  appId: "1:886913167195:web:15e1d358859bf07d60f47e",
-  measurementId: "G-TL87WZ6XEK"
+    authDomain: "itc-me.firebaseapp.com",
+    databaseURL: "https://itc-me-default-rtdb.firebaseio.com",
+    projectId: "itc-me",
+    storageBucket: "itc-me.firebasestorage.app",
+    messagingSenderId: "886913167195",
+    appId: "1:886913167195:web:15e1d358859bf07d60f47e",
+    measurementId: "G-TL87WZ6XEK"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -30,7 +30,16 @@ class StudentManager {
             this.showAllStudents();
         } catch (error) {
             console.error("Error loading students: ", error);
-            alert('حدث خطأ في تحميل بيانات الطلاب');
+            //alert('حدث خطأ في تحميل بيانات الطلاب');
+            swal.fire({
+                position: "center",
+                title: "حدث خطأ",
+                text: "نواجه مشكلة في تحميل بيانات الطلاب",
+                icon: "error",
+                showConfirmButton: false,
+                timer: 3000,
+            })
+
         }
     }
 
@@ -51,11 +60,32 @@ class StudentManager {
             this.updateAllStatistics();
         } catch (error) {
             console.error("Error saving students: ", error);
-            alert('حدث خطأ في حفظ بيانات الطلاب');
+            //alert('حدث خطأ في حفظ بيانات الطلاب');
+            swal.fire({
+                position: "center",
+                title: "حدث خطأ",
+                text: "نواجه مشكلة في حفظ بيانات الطلاب",
+                icon: "error",
+                showConfirmButton: false,
+                timer: 3000,
+            })
         }
     }
     async resetAllPoints() {
-        if (!confirm('هل أنت متأكد من تصفير جميع البيانات؟')) return;
+        //if (!confirm('هل أنت متأكد من تصفير جميع البيانات؟')) return;
+        const result = await Swal.fire({
+            title: "هل انت متأكد ؟",
+            text: "سيتم تصفير جميع نقاط الطلاب",
+            icon: "warning",
+            iconHtml: '<i class="fa-regular fa-address-card"></i>',
+            showCancelButton: true,
+            confirmButtonColor: "#4CAF50",
+            cancelButtonColor: "#f44336",
+            cancelButtonText: "لا",
+            confirmButtonText: "تأكيد"
+        });
+    
+        if (!result.isConfirmed) return;
     
         try {
             const batch = db.batch();
@@ -76,9 +106,26 @@ class StudentManager {
             if (this.currentStudentId) {
                 this.showStudentDetails(this.currentStudentId);
             }
+
+            await Swal.fire({
+                title: "تم التصفير!",
+                text: "تم تصفير جميع نقاط الطلاب بنجاح.",
+                icon: "success",
+                showConfirmButton: false,
+                timer: 1700,
+            })
+
         } catch (error) {
             console.error("Error resetting data: ", error);
-            alert('حدث خطأ في تصفير البيانات');
+            //alert('حدث خطأ في تصفير البيانات');
+            swal.fire({
+                position: "center",
+                title: "حدث خطأ",
+                text: "نواجه مشكلة في تصفير بيانات الطلاب",
+                icon: "error",
+                showConfirmButton: false,
+                timer: 3000,
+            })
         }
     }
 
@@ -176,12 +223,27 @@ class StudentManager {
         name = name || document.getElementById('studentName').value.trim();
 
         if (!name) {
-            alert('الرجاء إدخال اسم الطالب');
+            //alert('الرجاء إدخال اسم الطالب'); 
+            Swal.fire({
+                title: "لايوجد اسم طالب ؟",
+                text: "تأكد انك لم تترك الاسم فارغا",
+                icon: "question",
+                iconHtml: '<i class="fa-solid fa-user-ninja"></i>',
+                showConfirmButton: false,
+                timer: 1700,
+              });
             return false;
         }
 
         if (this.students.some(s => s.name === name)) {
-            alert('هذا الطالب موجود بالفعل');
+            //alert('هذا الطالب موجود بالفعل');
+            swal.fire({
+                title: "هذا الطالب موجود بالفعل",
+                icon: "warning",
+                iconHtml:'<i class="fa-solid fa-user-secret"></i>',
+                showConfirmButton: false,
+                timer: 1500
+            })
             return false;
         }
 
@@ -203,46 +265,144 @@ class StudentManager {
             return true;
         } catch (error) {
             console.error("Error adding student: ", error);
-            alert('حدث خطأ في إضافة الطالب');
+            //alert('حدث خطأ في إضافة الطالب');
+            swal.fire({
+                position: "center",
+                title: "حدث خطأ",
+                text: "نواجه مشكلة في إضافةالطلاب",
+                icon: "error",
+                showConfirmButton: false,
+                timer: 3000,
+            })
             return false;
         }
     }
 
     async deleteStudent(studentId) {
-        if (!confirm('هل أنت متأكد من حذف هذا الطالب؟')) return;
-
-        try {
-            await db.collection('students').doc(studentId).delete();
-            
-            this.students = this.students.filter(s => s.id !== studentId);
-            
-            this.showAllStudents();
-            this.updateAllStatistics();
-        } catch (error) {
-            console.error("Error deleting student: ", error);
-            alert('حدث خطأ في حذف الطالب');
+        const swalWithBootstrapButtons = Swal.mixin({
+            customClass: {
+                confirmButton: "btn btn-success",
+                cancelButton: "btn btn-danger"
+            },
+            buttonsStyling: true
+        });
+    
+        const result = await swalWithBootstrapButtons.fire({
+            title: "هل انت متأكد ؟",
+            text: "سيتم حذف الطالب نهائيا",
+            icon: "warning",
+            iconHtml: '<i class="fa-solid fa-user-injured"></i>',
+            showCancelButton: true,
+            confirmButtonColor: "#4CAF50",
+            cancelButtonColor: "#f44336",
+            confirmButtonText: "تأكيد",
+            cancelButtonText: "إلغاء",
+            reverseButtons: false
+        });
+    
+        if (result.isConfirmed) {
+            try {
+                await db.collection('students').doc(studentId).delete();
+                this.students = this.students.filter(s => s.id !== studentId);
+                this.showAllStudents();
+                this.updateAllStatistics();
+    
+                swalWithBootstrapButtons.fire({
+                    title: "تم العملية بنجاح",
+                    text: "حذفنا الطالب نهائيا",
+                    icon: "success",
+                    showConfirmButton: false,
+                    timer: 1500,
+                });
+            } catch (error) {
+                console.error("Error deleting student: ", error);
+                swal.fire({
+                    position: "center",
+                    title: "حدث خطأ",
+                    text: "نواجه مشكلة في حذف الطلاب",
+                    icon: "error",
+                    showConfirmButton: false,
+                    timer: 3000,
+                });
+            }
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+            swalWithBootstrapButtons.fire({
+                title: "إلغاء",
+                text: "الطالب بأمان :)",
+                iconHtml:'<i class="fa-solid fa-user"></i>',
+                icon: "error",
+                showConfirmButton: false,
+                timer: 1500,
+            });
         }
     }
+    
 
     async clearAllStudents() {
-        if (!confirm('هل أنت متأكد من مسح جميع الطلاب؟')) return;
-
-        try {
-            const batch = db.batch();
-            this.students.forEach(student => {
-                const studentRef = db.collection('students').doc(student.id);
-                batch.delete(studentRef);
+        const swalWithBootstrapButtons = Swal.mixin({
+            customClass: {
+                confirmButton: "btn btn-success",
+                cancelButton: "btn btn-danger"
+            },
+            buttonsStyling: true
+        });
+    
+        const result = await swalWithBootstrapButtons.fire({
+            title: "هل انت متأكد ؟",
+            text: "سيتم حذف الطلاب نهائيا",
+            icon: "warning",
+            iconHtml: '<i class="fa-solid fa-user-injured"></i>',
+            showCancelButton: true,
+            confirmButtonColor: "#4CAF50",
+            cancelButtonColor: "#f44336",
+            confirmButtonText: "تأكيد",
+            cancelButtonText: "إلغاء",
+            reverseButtons: false
+        });
+    
+        if (result.isConfirmed) {
+            try {
+                const batch = db.batch();
+                this.students.forEach(student => {
+                    const studentRef = db.collection('students').doc(student.id);
+                    batch.delete(studentRef);
+                });
+                await batch.commit();
+    
+                this.students = [];
+                this.showAllStudents();
+                this.updateAllStatistics();
+    
+                swalWithBootstrapButtons.fire({
+                    title: "تم العملية بنجاح",
+                    text: "حذفنا الطلاب نهائيا",
+                    icon: "success",
+                    showConfirmButton: false,
+                    timer: 1500,
+                });
+            } catch (error) {
+                console.error("Error clearing students: ", error);
+                swal.fire({
+                    position: "center",
+                    title: "حدث خطأ",
+                    text: "نواجه مشكلة في حذف الطلاب",
+                    icon: "error",
+                    showConfirmButton: false,
+                    timer: 3000,
+                });
+            }
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+            swalWithBootstrapButtons.fire({
+                title: "إلغاء",
+                text: "الطلاب بأمان :)",
+                icon: "error",
+                iconHtml:'<i class="fa-solid fa-user"></i>',
+                showConfirmButton: false,
+                timer: 1700,
             });
-            await batch.commit();
-
-            this.students = [];
-            this.showAllStudents();
-            this.updateAllStatistics();
-        } catch (error) {
-            console.error("Error clearing students: ", error);
-            alert('حدث خطأ في مسح جميع الطلاب');
         }
     }
+    
 
     showStudentDetails(studentId) {
         const student = this.students.find(s => s.id === studentId);
@@ -289,7 +449,31 @@ class StudentManager {
     async addAttendance() {
         const attendanceDate = document.getElementById('attendanceDate').value;
         if (!attendanceDate || !this.currentStudentId) {
-            alert('الرجاء اختيار تاريخ حضور');
+            //alert('الرجاء اختيار تاريخ حضور');
+            Swal.fire({
+                title: "الرجاء إختيار تاريخ الحضور",
+                icon: "info",
+                iconHtml: '<i class="fa-regular fa-calendar-xmark"></i>',
+                showConfirmButton: false,
+                timer: 1800,
+                showClass: {
+                    popup: `
+                        animate__animated
+                        animate__fadeInUp
+                        animate__faster
+                    `
+                },
+                hideClass: {
+                    popup: `
+                        animate__animated
+                        animate__fadeOutDown
+                        animate__faster
+                    `
+                },
+                customClass: {
+                    popup: 'custom-padding'    
+                }
+            });            
             return;
         }
 
@@ -297,13 +481,37 @@ class StudentManager {
         if (!student) return;
 
         if (student.attendances.includes(attendanceDate)) {
-            alert('تم إضافة هذا التاريخ من قبل');
+            //alert('تم إضافة هذا التاريخ من قبل');
+            Swal.fire({
+                title: "تم إضافة هذا التاريخ من قبل",
+                icon: "info",
+                iconHtml: '<i class="fa-regular fa-calendar-xmark"></i>',
+                showConfirmButton: false,
+                timer: 1800,
+                showClass: {
+                    popup: `
+                        animate__animated
+                        animate__fadeInUp
+                        animate__faster
+                    `
+                },
+                hideClass: {
+                    popup: `
+                        animate__animated
+                        animate__fadeOutDown
+                        animate__faster
+                    `
+                },
+                customClass: {
+                    popup: 'custom-padding'    
+                }
+            });
             return;
         }
 
         try {
             student.attendances.push(attendanceDate);
-            student.totalPoints += 1;
+            student.totalPoints += 1;  //نقطة واحدة
             
             await db.collection('students').doc(student.id).update({
                 attendances: student.attendances,
@@ -315,7 +523,15 @@ class StudentManager {
             document.getElementById('attendanceDate').value = '';
         } catch (error) {
             console.error("Error adding attendance: ", error);
-            alert('حدث خطأ في إضافة الحضور');
+            //alert('حدث خطأ في إضافة الحضور');
+            swal.fire({
+                position: "center",
+                title: "حدث خطأ",
+                text: "نواجه مشكلة في إضافة الحضور",
+                icon: "error",
+                showConfirmButton: false,
+                timer: 3000,
+            });
         }
     }
 
@@ -336,7 +552,15 @@ class StudentManager {
             this.showStudentDetails(this.currentStudentId);
         } catch (error) {
             console.error("Error removing attendance: ", error);
-            alert('حدث خطأ في إزالة الحضور');
+            //alert('حدث خطأ في إزالة الحضور');
+            swal.fire({
+                position: "center",
+                title: "حدث خطأ",
+                text: "نواجه مشكلة في إزالة الحضور",
+                icon: "error",
+                showConfirmButton: false,
+                timer: 3000,
+            });
         }
     }
 
@@ -345,7 +569,31 @@ class StudentManager {
         const projectDate = document.getElementById('projectDate').value;
 
         if (!projectTitle || !projectDate) {
-            alert('الرجاء إدخال عنوان المشروع وتاريخه');
+            //alert('الرجاء إدخال عنوان المشروع وتاريخه');
+            Swal.fire({
+                title: "أدخل عنوان المشروع و تاريخه",
+                icon: "info",
+                iconHtml: '<i class="fa-solid fa-diagram-project"></i>',
+                showConfirmButton: false,
+                timer: 1800,
+                showClass: {
+                    popup: `
+                        animate__animated
+                        animate__fadeInUp
+                        animate__faster
+                    `
+                },
+                hideClass: {
+                    popup: `
+                        animate__animated
+                        animate__fadeOutDown
+                        animate__faster
+                    `
+                },
+                customClass: {
+                    popup: 'custom-padding'    
+                }
+            });
             return;
         }
 
@@ -373,7 +621,15 @@ class StudentManager {
             document.getElementById('projectDate').value = '';
         } catch (error) {
             console.error("Error adding project: ", error);
-            alert('حدث خطأ في إضافة المشروع');
+            //alert('حدث خطأ في إضافة المشروع');
+            swal.fire({
+                position: "center",
+                title: "حدث خطأ",
+                text: "نواجه مشكلة في إضافة المشروع",
+                icon: "error",
+                showConfirmButton: false,
+                timer: 3000,
+            });
         }
     }
 
@@ -394,7 +650,15 @@ class StudentManager {
             this.showStudentDetails(this.currentStudentId);
         } catch (error) {
             console.error("Error removing project: ", error);
-            alert('حدث خطأ في إزالة المشروع');
+            //alert('حدث خطأ في إزالة المشروع');
+            swal.fire({
+                position: "center",
+                title: "حدث خطأ",
+                text: "نواجه مشكلة في إزالة المشروع",
+                icon: "error",
+                showConfirmButton: false,
+                timer: 3000,
+            });
         }
     }
 
@@ -461,3 +725,17 @@ const studentManager = new StudentManager();
         studentManager.addStudent();
     }
 }
+
+function toggleTheme() {
+    const currentTheme = document.getElementById('theme-stylesheet').getAttribute('href');
+    const themeIcon = document.getElementById('theme-icon');
+
+    if (currentTheme === 'dark.css') {
+        document.getElementById('theme-stylesheet').setAttribute('href', 'light.css');
+        themeIcon.setAttribute('src', 'icon/moon.svg');
+    } else {
+        document.getElementById('theme-stylesheet').setAttribute('href', 'dark.css');
+        themeIcon.setAttribute('src', 'icon/sun.svg'); 
+    }
+}
+
