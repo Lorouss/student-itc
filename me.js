@@ -158,6 +158,7 @@ class StudentManager {
                 <div>
                     <span class="action-btn" onclick="studentManager.showStudentDetails('${student.id}')">🔍</span>
                     <span class="action-btn" onclick="studentManager.deleteStudent('${student.id}')">❌</span>
+                    <span class="action-btn" onclick="studentManager.editStudentName('${student.id}')">✏️</span>
                 </div>
             </div>
         `).join('') || '<p>لا يوجد طلاب</p>';
@@ -180,6 +181,7 @@ class StudentManager {
                 <div>
                     <span class="action-btn" onclick="studentManager.showStudentDetails('${student.id}')">🔍</span>
                     <span class="action-btn" onclick="studentManager.deleteStudent('${student.id}')">❌</span>
+                    <span class="action-btn" onclick="studentManager.editStudentName('${student.id}')">✏️</span>
                 </div>
             </div>
         `).join('') || '<p>لا يوجد حضورات</p>';
@@ -211,6 +213,7 @@ class StudentManager {
                 <div>
                     <span class="action-btn" onclick="studentManager.showStudentDetails('${student.id}')">🔍</span>
                     <span class="action-btn" onclick="studentManager.deleteStudent('${student.id}')">❌</span>
+                    <span class="action-btn" onclick="studentManager.editStudentName('${student.id}')">✏️</span>
                 </div>
             </div>
         `).join('') 
@@ -402,8 +405,65 @@ class StudentManager {
             });
         }
     }
-    
 
+    async editStudentName(studentId) {
+        const student = this.students.find(s => s.id === studentId);
+        if (!student) return;
+    
+        const { value: newName } = await Swal.fire({
+            title: 'تعديل اسم الطالب',
+            input: 'text',
+            inputLabel: 'الاسم الجديد',
+            inputValue: student.name,
+            showCancelButton: true,
+            confirmButtonText: 'حفظ',
+            cancelButtonText: 'إلغاء',
+            confirmButtonColor: "#4CAF50",
+            cancelButtonColor: "#f44336",
+            inputValidator: (value) => {
+                if (!value || value.trim() === '') {
+                    return 'الرجاء إدخال اسم الطالب';
+                }
+                if (this.students.some(s => s.id !== studentId && s.name === value.trim())) {
+                    return 'هذا الاسم موجود بالفعل';
+                }
+            }
+        });
+    
+        if (newName) {
+            try {
+                await db.collection('students').doc(studentId).update({
+                    name: newName.trim()
+                });
+    
+                student.name = newName.trim();
+    
+                this.showAllStudents();
+                this.updateAllStatistics();
+    
+                await Swal.fire({
+                    title: "تم التعديل!",
+                    text: "تم تغيير اسم الطالب بنجاح",
+                    icon: "success",
+                    iconHtml: '<i class="fa-regular fa-circle-check"></i>',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+    
+            } catch (error) {
+                console.error("Error updating student name: ", error);
+                await Swal.fire({
+                    position: "center",
+                    title: "حدث خطأ",
+                    text: "نواجه مشكلة في تحديث اسم الطالب",
+                    icon: "error",
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            }
+        }
+    }
+    
     showStudentDetails(studentId) {
         const student = this.students.find(s => s.id === studentId);
         if (!student) return;
@@ -684,6 +744,7 @@ class StudentManager {
                     <div>
                         <span class="action-btn" onclick="studentManager.showStudentDetails('${student.id}')">🔍</span>
                         <span class="action-btn" onclick="studentManager.deleteStudent('${student.id}')">❌</span>
+                        <span class="action-btn" onclick="studentManager.editStudentName('${student.id}')">✏️</span>
                     </div>
                 </div>
             `).join('')
@@ -727,15 +788,40 @@ const studentManager = new StudentManager();
 }
 
 function toggleTheme() {
-    const currentTheme = document.getElementById('theme-stylesheet').getAttribute('href');
+    const themeStylesheet = document.getElementById('theme-stylesheet');
     const themeIcon = document.getElementById('theme-icon');
+    const logo = document.querySelector('.logo img');
 
-    if (currentTheme === 'dark.css') {
-        document.getElementById('theme-stylesheet').setAttribute('href', 'light.css');
-        themeIcon.setAttribute('src', 'icon/moon.svg');
+    if (themeStylesheet.getAttribute('href') === 'light.css') {
+        themeStylesheet.setAttribute('href', 'dark.css');
+        themeIcon.setAttribute('src', 'icon/sun.svg');
+        logo.setAttribute('src', 'icon/logo_dark.svg');
+        
+        localStorage.setItem('site-theme', 'dark');
     } else {
-        document.getElementById('theme-stylesheet').setAttribute('href', 'dark.css');
-        themeIcon.setAttribute('src', 'icon/sun.svg'); 
+        themeStylesheet.setAttribute('href', 'light.css');
+        themeIcon.setAttribute('src', 'icon/moon.svg');
+        logo.setAttribute('src', 'icon/logo_light.svg');
+        
+        localStorage.setItem('site-theme', 'light');
     }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('site-theme');
+    const themeStylesheet = document.getElementById('theme-stylesheet');
+    const themeIcon = document.getElementById('theme-icon');
+    const logo = document.querySelector('.logo img');
+
+    if (savedTheme === 'light') {
+        themeStylesheet.setAttribute('href', 'light.css');
+        themeIcon.setAttribute('src', 'icon/moon.svg');
+        logo.setAttribute('src', 'icon/logo_light.svg');
+        localStorage.setItem('site-theme', 'light'); 
+    } else{
+        themeStylesheet.setAttribute('href', 'dark.css');
+        themeIcon.setAttribute('src', 'icon/sun.svg');
+        logo.setAttribute('src', 'icon/logo_dark.svg');
+    }
+});
 

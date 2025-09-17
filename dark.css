@@ -1,14 +1,28 @@
+*{
+    scroll-behavior: smooth;
+}
+:root {
+    --transition-speed: 0.3s;
+    --transition-timing: ease;
+}
+body,
 body {
     font-family: Arial, sans-serif;
     margin: 20px;
     direction: rtl;
     background-color: #1a1a1a;
     color: #ffffff;
+    transition: 
+                background-color var(--transition-speed) var(--transition-timing),
+                color var(--transition-speed) var(--transition-timing),
+                fill var(--transition-speed) var(--transition-timing),
+                stroke var(--transition-speed) var(--transition-timing),
+                border-color var(--transition-speed) var(--transition-timing);
 }
 
 .container {
     max-width: 900px;
-    margin: 0 auto;
+    margin: 25px auto 0;
     background-color: #242424;
     padding: 20px;
     box-shadow: 0 5px 15px rgba(255,255,255,0.1);
@@ -167,6 +181,7 @@ button:hover {
     animation: modalSlide 0.3s ease-out;
     border: 1px solid #333;
     position: relative;
+    z-index: 999;
 }
 
 .student {
@@ -331,28 +346,6 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 
-.theme {
-    background: none;
-    border: none;
-    padding: 18px;
-    cursor: pointer;
-    position: absolute;
-    top: 20px;
-    right: 40px;
-    z-index: 1000; 
-    box-shadow: none;
-}
-
-.theme img {
-    width: 24px;
-    height: 24px;
-}
-
-.theme:hover {
-    background: none;
-    transform: none;
-    box-shadow: none;
-}
 
 /* تصميم للأجهزة ذات الشاشات الصغيرة (الهواتف المحمولة) */
 @media (max-width: 450px) {
@@ -574,4 +567,56 @@ body::-webkit-scrollbar-thumb:hover {
         width: 24px;
         height: 24px;
     }
+}
+
+
+header{
+    background-color: #1a1a1a;
+    width: 100%;
+    position: relative;
+    z-index: initial;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    margin: -24px -20px;
+    direction: ltr;
+    transition: background-color var(--transition-speed) var(--transition-timing);
+}
+.logo{
+    text-decoration: none;
+    color: #1ee3dc;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 1.8em;
+    margin: auto 16px;
+    transition: transform var(--transition-speed) var(--transition-timing);
+}
+.navigation {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    justify-content: flex-end;
+}
+.navigation button{
+    background: none;
+    border: none;
+    padding: 18px;
+    cursor: pointer;
+    box-shadow: none;
+    font-weight: 500;
+    transition: transform var(--transition-speed) var(--transition-timing);
+}
+.navigation button img{
+    width: 24px;
+    height: 24px;
+    transition: transform var(--transition-speed) var(--transition-timing);
+}
+
+.navigation button:hover {
+    transform: scale(1.1);
+}
+
+.navigation button:active img {
+    transform: scale(0.9);
 }

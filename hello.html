@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link id="theme-stylesheet" rel="stylesheet" href="light.css">
+    <style>
+        /* Smooth transition for theme changes */
+        body, 
+        body * {
+            transition: 
+                background-color 0.3s ease,
+                color 0.3s ease,
+                fill 0.3s ease,
+                stroke 0.3s ease,
+                border-color 0.3s ease;
+        }
+
+        header {
+            background-color: #f0f4f8;
+            width: 100%;
+            position: relative;
+            z-index: 999;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            margin: -24px -20px;
+            direction: ltr;
+            transition: background-color 0.3s ease;
+        }
+
+        .logo {
+            text-decoration: none;
+            color: #1ee3dc;
+            text-transform: uppercase;
+            font-weight: 700;
+            font-size: 1.8em;
+            margin: auto 16px;
+            transition: transform 0.3s ease;
+        }
+
+        .navigation {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+            justify-content: flex-end;
+        }
+
+        .navigation button {
+            background: none;
+            border: none;
+            padding: 18px;
+            cursor: pointer;
+            box-shadow: none;
+            font-weight: 500;
+            transition: transform 0.3s ease;
+        }
+
+        .navigation button:hover {
+            transform: scale(1.1);
+        }
+
+        .navigation button img {
+            width: 24px;
+            height: 24px;
+            transition: transform 0.3s ease;
+        }
+
+        .navigation button:active img {
+            transform: scale(0.9);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a class="logo"><img src="icon/logo_dark.svg" alt="logo"></a>
+        <div class="navigation">
+            <button id="theme-toggle-btn" onclick="toggleTheme()">
+                <img id="theme-icon" src="icon/sun.svg" alt="Theme Icon">
+            </button>
+        </div>
+    </header>
+
+    <script>
+        function toggleTheme() {
+            const themeStylesheet = document.getElementById('theme-stylesheet');
+            const themeIcon = document.getElementById('theme-icon');
+            const logo = document.querySelector('.logo img');
+
+            if (themeStylesheet.getAttribute('href') === 'dark.css') {
+                themeStylesheet.setAttribute('href', 'light.css');
+                themeIcon.setAttribute('src', 'icon/moon.svg');
+                logo.setAttribute('src', 'icon/logo_light.svg');
+            } else {
+                themeStylesheet.setAttribute('href', 'dark.css');
+                themeIcon.setAttribute('src', 'icon/sun.svg');
+                logo.setAttribute('src', 'icon/logo_dark.svg');
+            }
+        }
+    </script>
+</body>
+</html>
