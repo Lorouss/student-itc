@@ -8,7 +8,8 @@
 body,
 body {
     font-family: Arial, sans-serif;
-    margin: 20px;
+    margin: 0px;
+    padding: 20px;
     direction: rtl;
     background-color: #f0f4f8;
     color: #333;
@@ -83,7 +84,6 @@ input {
     color: #333;
     box-shadow: inset 2px 2px 5px #f0f0f0;
     transition: all 0.2s;
-    width: 97%;
 }
 
 input:focus {
@@ -226,7 +226,7 @@ button:hover {
     border-radius: 12px;
     font-size: 13px;
     margin-right: 10px;
-    box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
     unicode-bidi: isolate;
 }
 
@@ -616,4 +616,14 @@ header{
 
 .navigation button:active img {
     transform: scale(0.9);
+}
+
+
+.csv-controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 15px;
 }

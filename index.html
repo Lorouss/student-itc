@@ -47,6 +47,19 @@
             <button onclick="studentManager.resetAllPoints()" class="clear-btn"><i class="fas fa-redo"></i> تصفير النقاط</button>
         </div>
 
+        <div id="csvControls" class="csv-controls" style="display:none;">
+            <button class="btn-select-all" onclick="selectAllMembers()">
+                <i class="fas fa-check-square"></i> تحديد الكل
+            </button>
+            <button class="btn-deselect-all" onclick="deselectAllMembers()">
+                <i class="fas fa-times-circle"></i> إلغاء التحديد
+            </button>
+            <button class="btn-download-csv" id="downloadCsvBtn" onclick="downloadMembersCSV()" disabled>
+                <i class="fas fa-download"></i> تحميل CSV
+            </button>
+            <span class="selected-count" id="selectedCount">المحدد: 0</span>
+        </div>
+
         <div id="totalStudentsList" class="list-section"></div>
         <div id="topStudentsFullList" class="list-section" style="display:none;"></div>
         <div id="mostAttendanceFullList" class="list-section" style="display:none;"></div>
